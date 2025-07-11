@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Register -Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+  </head>
+
+  <body class="bg-light">
+    <div class="container py-5">
+      <div class="card mx-auto" style="max-width: 500px">
+        <div class="card-body">
+          <form id="expenseForm">
+            <label>Expense Name</label>
+            <input
+              type="text"
+              id="expenseName"
+              class="form-control mb-2"
+              placeholder=""
+            />
+            <div
+              id="expenseNameError"
+              class="text-danger fw-bold mb-2"
+              style="font-size: 0.9em"
+            ></div>
+
+            <label>Amount</label>
+            <input
+              type="number"
+              id="expenseAmount"
+              class="form-control mb-2"
+              placeholder=""
+            />
+            <div
+              id="expenseAmountError"
+              class="text-danger fw-bold mb-2"
+              style="font-size: 0.9em"
+            ></div>
+
+            <label>Date</label>
+            <input type="date" id="expenseDate" class="form-control mb-2" />
+            <div
+              id="expenseDateError"
+              class="text-danger fw-bold mb-2"
+              style="font-size: 0.9em"
+            ></div>
+
+            <label>Description</label>
+            <textarea
+              id="expenseDescription"
+              rows="3"
+              class="form-control mb-3"
+              placeholder=""
+            ></textarea>
+            <div
+              id="expenseDescriptionError"
+              class="text-danger fw-bold mb-2"
+              style="font-size: 0.9em"
+            ></div>
+
+            <button type="submit" class="btn btn-success w-100">
+              Add Expense
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+      $("#expenseForm").submit(function (e) {
+        e.preventDefault();
+        const expense_name = $("#expenseName").val().trim();
+        const amount = $("#expenseAmount").val();
+        const expense_date = $("#expenseDate").val();
+        const description = $("#expenseDescription").val().trim();
+
+        $("#expenseNameError").text("");
+        $("#expenseAmountError").text("");
+        $("#expenseDateError").text("");
+        $("#expenseDescriptionError").text("");
+
+        $.ajax({
+          url: "http://localhost:8080/api/expense/add_expense",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({
+            expense_name: expense_name,
+            amount: amount,
+            expense_date: expense_date,
+            description: description,
+          }),
+          success: function () {
+            Toastify({
+              text: "Expense added successfully!",
+              duration: 3000,
+              gravity: "top",
+              position: "right",
+              backgroundColor: "#198754",
+            }).showToast();
+
+            $("#expenseForm")[0].reset();
+
+            setTimeout(() => {
+              window.location.href = "/expense-list";
+            }, 2000);
+          },
+          error: function (xhr) {
+            if (xhr.responseJSON && xhr.responseJSON.data) {
+              const errors = xhr.responseJSON.data;
+              if (errors.expense_name)
+                $("#expenseNameError").text(errors.expense_name);
+              if (errors.amount) $("#expenseAmountError").text(errors.amount);
+              if (errors.expense_date)
+                $("#expenseDateError").text(errors.expense_date);
+              if (errors.description)
+                $("#expenseDescriptionError").text(errors.description);
+            } else {
+              Toastify({
+                text: xhr.responseJSON?.message || "Something went wrong!",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#dc3545",
+              }).showToast();
+            }
+          },
+        });
+      });
+    </script>
+  </body>
+</html>
